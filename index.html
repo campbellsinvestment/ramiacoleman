@@ -45,7 +45,7 @@ h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 18px; min-width: 0; }
 .sub { margin: 0; color: var(--muted); font-size: 0.95rem; }
 .field { display: grid; gap: 6px; min-width: 0; }
-input[type="text"], textarea {
+input[type="text"], input[type="email"], textarea {
   width: 100%; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 11px 12px; min-width: 0;
 }
 textarea { resize: vertical; min-height: 76px; }
@@ -102,6 +102,10 @@ textarea { resize: vertical; min-height: 76px; }
     <div class="field">
       <label class="label" for="gContact">Contact</label>
       <input id="gContact" type="text" maxlength="80" autocomplete="off" placeholder="876-555-0101">
+    </div>
+    <div class="field">
+      <label class="label" for="gEmail">Email</label>
+      <input id="gEmail" type="email" maxlength="80" autocomplete="email" placeholder="name@email.com">
     </div>
     <div class="choices" role="group" aria-label="Reply">
       <button type="button" class="choice" data-s="yes" aria-pressed="true">I'm coming</button>
@@ -179,7 +183,8 @@ var CONFIG = {
       name: $("gName").value.trim(),
       answer: LABEL[draft.status],
       people: draft.status === "no" ? 0 : draft.party,
-      contact: $("gContact").value.trim()
+      contact: $("gContact").value.trim(),
+      email: $("gEmail").value.trim()
     };
   }
   function storeReply() {
@@ -190,6 +195,7 @@ var CONFIG = {
     body.set(CONFIG.sheetEntries.answer, data.answer);
     body.set(CONFIG.sheetEntries.people, String(data.people));
     body.set(CONFIG.sheetEntries.contact, data.contact);
+    if (CONFIG.sheetEntries.email) body.set(CONFIG.sheetEntries.email, data.email);
     return fetch(CONFIG.sheetForm, { method: "POST", mode: "no-cors", body: body });
   }
 
@@ -214,7 +220,7 @@ var CONFIG = {
   });
   $("gMinus").addEventListener("click", function () { draft.party = Math.max(1, draft.party - 1); refresh(); });
   $("gPlus").addEventListener("click", function () { draft.party = Math.min(10, draft.party + 1); refresh(); });
-  ["gName", "gContact"].forEach(function (id) { $(id).addEventListener("input", function () { setMsg(""); refresh(); }); });
+  ["gName", "gContact", "gEmail"].forEach(function (id) { $(id).addEventListener("input", function () { setMsg(""); refresh(); }); });
 
   function finished(text) {
     $("formSec").hidden = true; $("doneBox").hidden = false; $("doneBox").textContent = text;
