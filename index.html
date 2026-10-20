@@ -49,9 +49,7 @@ textarea { resize: vertical; min-height: 76px; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .choice { font: inherit; font-weight: 700; padding: 14px 6px; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; line-height: 1.2; }
-.choice[aria-pressed="true"][data-s="yes"] { background: var(--yes-soft); border-color: var(--yes); color: var(--yes); }
-.choice[aria-pressed="true"][data-s="maybe"] { background: var(--maybe-soft); border-color: var(--maybe); color: var(--maybe); }
-.choice[aria-pressed="true"][data-s="no"] { background: var(--no-soft); border-color: var(--no); color: var(--no); }
+.choice[aria-pressed="true"] { background: #E3E0D6; border-color: var(--ink); color: var(--ink); }
 .stepper { display: flex; align-items: center; gap: 12px; }
 .stepper button { width: 44px; height: 44px; font-size: 1.3rem; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
 .stepper output { font-family: var(--font-mono); font-size: 1.2rem; min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
@@ -91,49 +89,33 @@ textarea { resize: vertical; min-height: 76px; }
     </dl>
     <p id="evNote" class="note" hidden></p>
     <p id="doneBox" class="done" hidden></p>
-    <div class="cta" id="cta">
-      <button type="button" class="btn big" id="ctaYes">I'm attending</button>
-      <button type="button" class="btn ghost big" id="ctaNo">Can't make it</button>
-    </div>
   </header>
 
-  <section id="formSec" class="panel" hidden>
-    <div>
-      <h2>Your reply</h2>
-      <p class="sub">Fill this in, then send it to the host.</p>
+  <section id="formSec" class="panel">
+    <div class="field">
+      <label class="label" for="gName">Name</label>
+      <input id="gName" type="text" maxlength="80" autocomplete="name">
     </div>
     <div class="field">
-      <label class="label" for="gName">Your name</label>
-      <input id="gName" type="text" maxlength="80" autocomplete="name" placeholder="First and last name">
+      <label class="label" for="gContact">Contact</label>
+      <input id="gContact" type="text" maxlength="80" autocomplete="off" placeholder="876-555-0101">
     </div>
-    <div class="field">
-      <label class="label" for="gContact">Phone, WhatsApp or email (optional)</label>
-      <input id="gContact" type="text" maxlength="80" autocomplete="off" placeholder="So the host can reach you">
+    <div class="choices" role="group" aria-label="Reply">
+      <button type="button" class="choice" data-s="yes" aria-pressed="true">I'm coming</button>
+      <button type="button" class="choice" data-s="maybe" aria-pressed="false">Maybe</button>
+      <button type="button" class="choice" data-s="no" aria-pressed="false">Can't make it</button>
     </div>
-    <div class="field">
-      <span class="label" id="gChoiceLabel">Your answer</span>
-      <div class="choices" role="group" aria-labelledby="gChoiceLabel">
-        <button type="button" class="choice" data-s="yes" aria-pressed="false">I'm coming</button>
-        <button type="button" class="choice" data-s="maybe" aria-pressed="false">Maybe</button>
-        <button type="button" class="choice" data-s="no" aria-pressed="false">Can't make it</button>
-      </div>
-    </div>
-    <div class="field" id="partyField" hidden>
-      <span class="label">How many people, including you</span>
+    <div class="field" id="partyField">
+      <span class="label">People attending</span>
       <div class="stepper">
         <button type="button" id="gMinus" aria-label="One fewer">−</button>
         <output id="gParty" aria-live="polite">1</output>
         <button type="button" id="gPlus" aria-label="One more">+</button>
       </div>
     </div>
-    <div class="field">
-      <label class="label" for="gNote">A note for the host (optional)</label>
-      <textarea id="gNote" maxlength="400" placeholder="Running late, bringing a friend, dietary needs…"></textarea>
-    </div>
     <div class="row" id="sendRow">
       <button type="button" class="btn" id="sendForm" hidden>Send my reply</button>
-      <a class="btn" id="sendWa" target="_blank" rel="noopener" hidden>Send on WhatsApp</a>
-      <a class="btn" id="sendMail" hidden>Send by email</a>
+      <a class="btn" id="sendMail" hidden>Submit</a>
     </div>
     <p id="gMsg" class="msg" role="status"></p>
     <p class="sub" id="noMethod" hidden>Reply sending is not set up on this page yet.</p>
@@ -151,14 +133,15 @@ var CONFIG = {
   whatsapp: "18765874575", // host WhatsApp number, digits only with country code
   email: "colemanramia@gmail.com", // host email address
   formUrl: "",       // optional: a Google Form link. If set, the buttons open it instead
-  formEndpoint: ""   // optional: a Formspree URL (https://formspree.io/f/xxxx) to receive replies directly
+  formEndpoint: "",  // optional: a Formspree URL (https://formspree.io/f/xxxx) to receive replies directly
+  sheetUrl: ""       // Google Apps Script web app URL; each send adds a spreadsheet row
 };
 /* ===== END EDIT BLOCK ===== */
 
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var LABEL = { yes: "Going", maybe: "Maybe", no: "Can't make it" };
-  var draft = { status: null, party: 1 };
+  var draft = { status: "yes", party: 1 };
 
   $("evTitle").textContent = "Album Listening Party";
   document.title = "Album Listening Party RSVP";
@@ -169,17 +152,35 @@ var CONFIG = {
 
   function setMsg(t, k) { $("gMsg").textContent = t || ""; $("gMsg").className = "msg" + (k ? " " + k : ""); }
 
+  function replyData() {
+    return {
+      name: $("gName").value.trim(),
+      answer: LABEL[draft.status],
+      people: draft.status === "no" ? 0 : draft.party,
+      contact: $("gContact").value.trim()
+    };
+  }
+  function storeReply() {
+    if (!CONFIG.sheetUrl) return;
+    fetch(CONFIG.sheetUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(replyData())
+    }).catch(function () {});
+  }
+
   function message() {
-    var name = $("gName").value.trim(), contact = $("gContact").value.trim(), note = $("gNote").value.trim();
-    var lines = ["Listening party RSVP", "Name: " + (name || "(add your name)"), "Answer: " + (draft.status ? LABEL[draft.status] : "(pick an answer)")];
-    if (draft.status === "yes" || draft.status === "maybe") lines.push("People: " + draft.party);
-    if (contact) lines.push("Contact: " + contact);
-    if (note) lines.push("Note: " + note);
+    var name = $("gName").value.trim(), contact = $("gContact").value.trim();
+    var lines = [draft.status ? LABEL[draft.status] : ""];
+    if (name) lines.push(name);
+    if (draft.status === "yes" || draft.status === "maybe") lines.push(draft.party + (draft.party === 1 ? " person" : " people"));
+    if (contact) lines.push(contact);
     return lines.join("\n");
   }
   function ready() {
-    if (!$("gName").value.trim()) { setMsg("Add your name so the host knows who replied.", "bad"); return false; }
-    if (!draft.status) { setMsg("Pick one: I'm coming, Maybe, or Can't make it.", "bad"); return false; }
+    if (!$("gName").value.trim()) { setMsg("Add your name.", "bad"); return false; }
+    if (!draft.status) { setMsg("Pick one.", "bad"); return false; }
     return true;
   }
   function refresh() {
@@ -187,50 +188,30 @@ var CONFIG = {
     $("partyField").hidden = !(draft.status === "yes" || draft.status === "maybe");
     $("gParty").textContent = String(draft.party);
     var m = message(), enc = encodeURIComponent(m);
-    var wa = String(CONFIG.whatsapp || "").replace(/\D/g, "");
-    $("sendWa").href = wa ? "https://wa.me/" + wa + "?text=" + enc : "#";
-    $("sendMail").href = CONFIG.email ? "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent("Listening party RSVP") + "&body=" + enc : "#";
+    $("sendMail").href = CONFIG.email ? "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent("RSVP") + "&body=" + enc : "#";
   }
 
   // Which sending options exist.
-  var hasForm = !!CONFIG.formEndpoint, hasWa = !!String(CONFIG.whatsapp || "").replace(/\D/g, ""), hasMail = !!CONFIG.email;
-  $("sendForm").hidden = !hasForm; $("sendWa").hidden = !hasWa; $("sendMail").hidden = !hasMail;
-  $("noMethod").hidden = hasForm || hasWa || hasMail;
-
-  // Google Form mode: the buttons simply open the form.
-  if (CONFIG.formUrl) {
-    ["ctaYes", "ctaNo"].forEach(function (id) {
-      var b = $(id), a = document.createElement("a");
-      a.className = b.className; a.textContent = b.textContent; a.href = CONFIG.formUrl; a.target = "_blank"; a.rel = "noopener";
-      b.parentNode.replaceChild(a, b);
-    });
-  } else {
-    function openForm(status) {
-      draft.status = status; if (status === "no") draft.party = 1;
-      $("formSec").hidden = false; $("doneBox").hidden = true; setMsg("");
-      refresh();
-      $("formSec").scrollIntoView({ behavior: "smooth", block: "start" });
-      if (!$("gName").value) $("gName").focus();
-    }
-    $("ctaYes").addEventListener("click", function () { openForm("yes"); });
-    $("ctaNo").addEventListener("click", function () { openForm("no"); });
-  }
+  var hasForm = !!CONFIG.formEndpoint, hasMail = !!CONFIG.email;
+  $("sendForm").hidden = !hasForm; $("sendMail").hidden = !hasMail;
+  $("noMethod").hidden = hasForm || hasMail;
 
   document.querySelectorAll(".choice").forEach(function (b) {
     b.addEventListener("click", function () { draft.status = b.getAttribute("data-s"); if (draft.status === "no") draft.party = 1; setMsg(""); refresh(); });
   });
   $("gMinus").addEventListener("click", function () { draft.party = Math.max(1, draft.party - 1); refresh(); });
   $("gPlus").addEventListener("click", function () { draft.party = Math.min(10, draft.party + 1); refresh(); });
-  ["gName", "gContact", "gNote"].forEach(function (id) { $(id).addEventListener("input", function () { setMsg(""); refresh(); }); });
+  ["gName", "gContact"].forEach(function (id) { $(id).addEventListener("input", function () { setMsg(""); refresh(); }); });
 
   function finished(text) {
     $("formSec").hidden = true; $("doneBox").hidden = false; $("doneBox").textContent = text;
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  ["sendWa", "sendMail"].forEach(function (id) {
+  ["sendMail"].forEach(function (id) {
     $(id).addEventListener("click", function (e) {
       if (!ready()) { e.preventDefault(); return; }
-      setMsg("Opening your app. Press send there to finish.", "ok");
+      storeReply();
+      setMsg("Press send to finish.", "ok");
     });
   });
   $("sendForm").addEventListener("click", function () {
@@ -238,11 +219,12 @@ var CONFIG = {
     var btn = $("sendForm"); btn.disabled = true; setMsg("Sending…");
     fetch(CONFIG.formEndpoint, {
       method: "POST", headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ name: $("gName").value.trim(), answer: LABEL[draft.status], people: draft.status === "no" ? 0 : draft.party, contact: $("gContact").value.trim(), note: $("gNote").value.trim() })
+      body: JSON.stringify(replyData())
     }).then(function (r) {
       if (!r.ok) throw new Error("bad status");
-      finished(draft.status === "no" ? "Thanks for letting us know." : "You're on the list. See you there.");
-    }).catch(function () { setMsg("That did not send. Check your connection and try again.", "bad"); })
+      storeReply();
+      finished(draft.status === "no" ? "Thanks." : "See you there.");
+    }).catch(function () { setMsg("Didn't send. Try again.", "bad"); })
       .then(function () { btn.disabled = false; });
   });
   refresh();
