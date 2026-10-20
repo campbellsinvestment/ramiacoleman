@@ -115,7 +115,7 @@ textarea { resize: vertical; min-height: 76px; }
     </div>
     <div class="row" id="sendRow">
       <button type="button" class="btn" id="sendForm" hidden>Send my reply</button>
-      <a class="btn" id="sendMail" hidden>Submit</a>
+      <button type="button" class="btn" id="sendMail" hidden>Submit</button>
     </div>
     <p id="gMsg" class="msg" role="status"></p>
     <p class="sub" id="noMethod" hidden>Reply sending is not set up on this page yet.</p>
@@ -134,7 +134,8 @@ var CONFIG = {
   email: "colemanramia@gmail.com", // host email address
   formUrl: "",       // optional: a Google Form link. If set, the buttons open it instead
   formEndpoint: "",  // optional: a Formspree URL (https://formspree.io/f/xxxx) to receive replies directly
-  sheetUrl: ""       // Google Apps Script web app URL; each send adds a spreadsheet row
+  sheetForm: "https://docs.google.com/forms/d/e/1FAIpQLScYvAvkYkCfAbplfnquV6feBWgRCOsCaHSLd6muzk0HEHa2OA/formResponse",
+  sheetEntries: { name: "entry.2046328231", answer: "entry.891359163", people: "entry.1939139977", contact: "entry.1861086746" }
 };
 /* ===== END EDIT BLOCK ===== */
 
@@ -161,23 +162,16 @@ var CONFIG = {
     };
   }
   function storeReply() {
-    if (!CONFIG.sheetUrl) return;
-    fetch(CONFIG.sheetUrl, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(replyData())
-    }).catch(function () {});
+    if (!CONFIG.sheetForm) return Promise.reject(new Error("no form"));
+    var data = replyData();
+    var body = new URLSearchParams();
+    body.set(CONFIG.sheetEntries.name, data.name);
+    body.set(CONFIG.sheetEntries.answer, data.answer);
+    body.set(CONFIG.sheetEntries.people, String(data.people));
+    body.set(CONFIG.sheetEntries.contact, data.contact);
+    return fetch(CONFIG.sheetForm, { method: "POST", mode: "no-cors", body: body });
   }
 
-  function message() {
-    var name = $("gName").value.trim(), contact = $("gContact").value.trim();
-    var lines = [draft.status ? LABEL[draft.status] : ""];
-    if (name) lines.push(name);
-    if (draft.status === "yes" || draft.status === "maybe") lines.push(draft.party + (draft.party === 1 ? " person" : " people"));
-    if (contact) lines.push(contact);
-    return lines.join("\n");
-  }
   function ready() {
     if (!$("gName").value.trim()) { setMsg("Add your name.", "bad"); return false; }
     if (!draft.status) { setMsg("Pick one.", "bad"); return false; }
@@ -187,14 +181,12 @@ var CONFIG = {
     document.querySelectorAll(".choice").forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-s") === draft.status)); });
     $("partyField").hidden = !(draft.status === "yes" || draft.status === "maybe");
     $("gParty").textContent = String(draft.party);
-    var m = message(), enc = encodeURIComponent(m);
-    $("sendMail").href = CONFIG.email ? "mailto:" + CONFIG.email + "?subject=" + encodeURIComponent("RSVP") + "&body=" + enc : "#";
   }
 
   // Which sending options exist.
-  var hasForm = !!CONFIG.formEndpoint, hasMail = !!CONFIG.email;
-  $("sendForm").hidden = !hasForm; $("sendMail").hidden = !hasMail;
-  $("noMethod").hidden = hasForm || hasMail;
+  var hasForm = !!CONFIG.formEndpoint, hasSheet = !!CONFIG.sheetForm;
+  $("sendForm").hidden = !hasForm; $("sendMail").hidden = !hasSheet;
+  $("noMethod").hidden = hasForm || hasSheet;
 
   document.querySelectorAll(".choice").forEach(function (b) {
     b.addEventListener("click", function () { draft.status = b.getAttribute("data-s"); if (draft.status === "no") draft.party = 1; setMsg(""); refresh(); });
@@ -207,11 +199,16 @@ var CONFIG = {
     $("formSec").hidden = true; $("doneBox").hidden = false; $("doneBox").textContent = text;
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  ["sendMail"].forEach(function (id) {
-    $(id).addEventListener("click", function (e) {
-      if (!ready()) { e.preventDefault(); return; }
-      storeReply();
-      setMsg("Press send to finish.", "ok");
+  $("sendMail").addEventListener("click", function () {
+    if (!ready()) return;
+    var btn = $("sendMail");
+    btn.disabled = true;
+    setMsg("Sending…");
+    storeReply().then(function () {
+      finished(draft.status === "no" ? "Thanks." : "See you there.");
+    }).catch(function () {
+      setMsg("Didn't send. Try again.", "bad");
+      btn.disabled = false;
     });
   });
   $("sendForm").addEventListener("click", function () {
