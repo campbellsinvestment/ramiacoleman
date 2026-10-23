@@ -288,7 +288,7 @@ var CONFIG = {
     var inside = e.clientX >= box.left && e.clientX <= box.right && e.clientY >= box.top && e.clientY <= box.bottom;
     if (!inside) $("party").close();
   });
-  openParty();
+  setTimeout(openParty, 5000);
   $("sendMail").addEventListener("click", function () {
     if (!ready()) return;
     var btn = $("sendMail");
