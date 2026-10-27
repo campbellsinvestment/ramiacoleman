@@ -1,4 +1,4 @@
-var GATE = "d1a3f578a3fa79f9a5009851d3046205ef5e729f8c2af59bbede5625369c53c0";
+var GATE = "cc437fbc854e76247ad58a80a377907dcede4a3a00c5a35429f787fc5a0a928b";
 
 function doGet(e) {
   var params = (e && e.parameter) || {};
