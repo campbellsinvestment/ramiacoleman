@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0c0f0a; --panel:#151a12; --line:#2a3324;
+    --bg:#243028; --panel:#314238; --line:#4d6656; --field:#1b2820;
     --text:#f3efe3; --muted:#a9b09c;
     --green:#1f8a4c; --gold:#f2b705; --red:#d62f2f;
   }
@@ -17,7 +17,7 @@
   body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.6;min-height:100vh}
   a{color:inherit}
   .stripe{height:6px;background:linear-gradient(90deg,var(--green) 0 33.3%,var(--gold) 33.3% 66.6%,var(--red) 66.6%)}
-  nav{border-bottom:1px solid var(--line);background:rgba(12,15,10,.92)}
+  nav{border-bottom:1px solid var(--line);background:rgba(36,48,40,.94)}
   nav .bar{max-width:720px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
   nav .brand{font-family:Anton,Impact,sans-serif;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
   nav a.back{color:var(--muted);text-decoration:none;font-size:.85rem}
@@ -30,7 +30,7 @@
   .lead{color:var(--muted);margin:18px 0 28px;max-width:46rem}
   form.sheet{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px;display:grid;gap:16px}
   label{display:block;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-  input,select,textarea{width:100%;background:#0c0f0a;border:1px solid var(--line);color:var(--text);padding:12px;border-radius:6px;font:inherit}
+  input,select,textarea{width:100%;background:var(--field);border:1px solid var(--line);color:var(--text);padding:12px;border-radius:6px;font:inherit}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
   textarea{min-height:160px;resize:vertical}
   .btn{display:inline-block;padding:13px 24px;border-radius:6px;font-weight:600;border:2px solid var(--gold);cursor:pointer;font-size:.95rem;font-family:inherit;background:transparent;color:var(--gold)}
@@ -44,7 +44,7 @@
   .status.err{color:#ff7b7b}
   .count{color:var(--muted);font-size:.8rem;text-align:right}
   .access-list{list-style:none;display:grid;gap:8px;margin-top:14px}
-  .access-list li{background:#0c0f0a;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .access-list li{background:var(--field);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
   .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
   [hidden]{display:none!important}
 </style>

@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0c0f0a; --panel:#151a12; --line:#2a3324;
+    --bg:#243028; --panel:#314238; --line:#4d6656; --field:#1b2820;
     --text:#f3efe3; --muted:#a9b09c;
     --green:#1f8a4c; --gold:#f2b705; --red:#d62f2f;
   }
@@ -21,7 +21,7 @@
   .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
   h1,h2,h3{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.03em;text-transform:uppercase;line-height:1.05}
   .stripe{height:6px;background:linear-gradient(90deg,var(--green) 0 33.3%,var(--gold) 33.3% 66.6%,var(--red) 66.6%)}
-  nav{position:sticky;top:0;z-index:10;background:rgba(12,15,10,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  nav{position:sticky;top:0;z-index:10;background:rgba(36,48,40,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   nav .wrap{display:flex;justify-content:space-between;align-items:center;height:56px}
   nav .brand{font-family:Anton,Impact,sans-serif;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
   nav ul{display:flex;gap:20px;list-style:none;font-size:.85rem}
@@ -79,7 +79,7 @@
   @media(max-width:640px){form.sheet{grid-template-columns:1fr;padding:20px}}
   .full{grid-column:1/-1}
   label{display:block;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-  input,select,textarea{width:100%;background:#0c0f0a;border:1px solid var(--line);color:var(--text);padding:12px;border-radius:6px;font:inherit}
+  input,select,textarea{width:100%;background:var(--field);border:1px solid var(--line);color:var(--text);padding:12px;border-radius:6px;font:inherit}
   input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
   textarea{min-height:110px;resize:vertical}
   .status{grid-column:1/-1;font-size:.9rem;min-height:1.4em;color:var(--muted)}
@@ -93,8 +93,10 @@
   .dubrow{display:flex;gap:8px;margin-bottom:8px}
   .dubrow select{flex:1}
   .dubrow button{flex:none}
-  footer{padding:36px 0;text-align:center;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line)}
-  footer a.quiet{color:var(--muted);font-size:.75rem;display:inline-block;margin-top:8px;text-decoration:none}
+  footer{padding:0 0 28px;text-align:center;color:var(--muted);font-size:.85rem}
+  footer .stripe{margin-bottom:22px}
+  footer p{display:flex;justify-content:center;align-items:center;gap:14px}
+  footer a.quiet{color:var(--muted);font-size:.75rem;text-decoration:none}
   footer a.quiet:hover{color:var(--gold)}
   dialog{margin:auto;background:var(--panel);color:var(--text);border:1px solid var(--gold);border-radius:12px;padding:24px;width:min(440px,94vw)}
   dialog::backdrop{background:rgba(0,0,0,.7)}
@@ -158,7 +160,6 @@
 <section id="album">
   <div class="wrap">
     <h2>The Album</h2>
-    <p class="lead">Introducing Ramia. Enter your email to open the album files. Radio edits, clean versions, and stems are available on request.</p>
     <div class="album">
       <div class="photo">
         <img src="images/album-cover.jpg" alt="Album cover: Introducing Ramia">
@@ -260,14 +261,13 @@
 </section>
 
 <footer>
-  <div class="stripe" style="margin-bottom:28px"></div>
-  <p>© 2026 ramia. All rights reserved. One Love.</p>
-  <a class="quiet" href="/client">Client</a>
+  <div class="stripe"></div>
+  <p>© 2026 ramia <a class="quiet" href="/client">Client</a></p>
 </footer>
 
 <dialog id="gate" aria-labelledby="gate-title">
   <h3 id="gate-title">Get the music</h3>
-  <p>Enter your email to open the album files.</p>
+  <p>Enter your email to open the album files. Radio edits, clean versions, and stems are available on request.</p>
   <form id="gate-form">
     <label for="gate-email">Email</label>
     <input id="gate-email" type="email" required autocomplete="email" placeholder="name@email.com">
