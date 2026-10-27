@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ramia | Site changes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0f0a; --panel:#151a12; --line:#2a3324;
+    --text:#f3efe3; --muted:#a9b09c;
+    --green:#1f8a4c; --gold:#f2b705; --red:#d62f2f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.6;min-height:100vh}
+  a{color:inherit}
+  .stripe{height:6px;background:linear-gradient(90deg,var(--green) 0 33.3%,var(--gold) 33.3% 66.6%,var(--red) 66.6%)}
+  nav{border-bottom:1px solid var(--line);background:rgba(12,15,10,.92)}
+  nav .bar{max-width:720px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+  nav .brand{font-family:Anton,Impact,sans-serif;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
+  nav a.back{color:var(--muted);text-decoration:none;font-size:.85rem}
+  nav a.back:hover{color:var(--gold)}
+  main{max-width:720px;margin:0 auto;padding:48px 20px 72px}
+  h1,h2{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.03em;text-transform:uppercase;line-height:1.05}
+  h1{font-size:clamp(2.4rem,6vw,3.4rem)}
+  h1::after{content:"";display:block;width:64px;height:4px;margin-top:12px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red))}
+  h2{font-size:1.7rem;margin:34px 0 8px}
+  .lead{color:var(--muted);margin:18px 0 28px;max-width:46rem}
+  form.sheet{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px;display:grid;gap:16px}
+  label{display:block;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+  input,select,textarea{width:100%;background:#0c0f0a;border:1px solid var(--line);color:var(--text);padding:12px;border-radius:6px;font:inherit}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+  textarea{min-height:160px;resize:vertical}
+  .btn{display:inline-block;padding:13px 24px;border-radius:6px;font-weight:600;border:2px solid var(--gold);cursor:pointer;font-size:.95rem;font-family:inherit;background:transparent;color:var(--gold)}
+  .btn.primary{background:var(--gold);color:#111}
+  .btn.primary:hover{background:#ffd13d}
+  .btn.ghost:hover{background:rgba(242,183,5,.12)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .status{font-size:.9rem;min-height:1.4em;color:var(--muted)}
+  .status.ok{color:#5fd08a}
+  .status.err{color:#ff7b7b}
+  .count{color:var(--muted);font-size:.8rem;text-align:right}
+  .access-list{list-style:none;display:grid;gap:8px;margin-top:14px}
+  .access-list li{background:#0c0f0a;border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<nav>
+  <div class="bar">
+    <a class="brand" href="index.html">ramia</a>
+    <a class="back" href="index.html">Back to the site</a>
+  </div>
+</nav>
+<main>
+  <section id="lock">
+    <h1>Client</h1>
+    <p class="lead">This page is locked. Enter the passphrase to give a DJ the music, or to send a site change.</p>
+    <form class="sheet" id="lock-form">
+      <div>
+        <label for="pass">Passphrase</label>
+        <input id="pass" type="password" required autocomplete="current-password" spellcheck="false">
+      </div>
+      <p class="status" id="lock-status" role="status"></p>
+      <div><button class="btn primary" id="lock-btn" type="submit">Continue</button></div>
+    </form>
+  </section>
+
+  <section id="request" hidden>
+    <h1>Client</h1>
+    <p class="lead">Give a DJ access to the album files, or send a change for the developer to make.</p>
+    <h2>Music access</h2>
+    <p class="lead">Add the DJ's email. They enter that same email on the site to open the album.</p>
+    <form class="sheet" id="access-form" novalidate>
+      <div>
+        <label for="dj-name">DJ / show name</label>
+        <input id="dj-name" autocomplete="name">
+      </div>
+      <div>
+        <label for="dj-email">DJ email *</label>
+        <input id="dj-email" type="email" required autocomplete="off" placeholder="dj@email.com">
+      </div>
+      <div class="row">
+        <button class="btn primary" id="give-access" type="submit">Give access</button>
+        <button class="btn ghost" id="remove-access" type="button">Remove access</button>
+      </div>
+      <p class="status" id="access-status" role="status"></p>
+    </form>
+    <ul class="access-list" id="access-list"></ul>
+    <h2>Site changes</h2>
+    <p class="lead">Describe what should change. Sending opens an email with the request. Nothing here is published on its own.</p>
+    <form class="sheet" id="change-form" novalidate>
+      <div class="hp" aria-hidden="true" inert>
+        <label for="company">Company</label>
+        <input id="company" tabindex="-1" autocomplete="off">
+      </div>
+      <div>
+        <label for="name">Your name *</label>
+        <input id="name" required autocomplete="name">
+      </div>
+      <div>
+        <label for="email">Email *</label>
+        <input id="email" type="email" required autocomplete="email" placeholder="name@email.com">
+      </div>
+      <div>
+        <label for="section">Part of the site *</label>
+        <select id="section" required>
+          <option value="">Choose one</option>
+          <option>Hero</option>
+          <option>Bio</option>
+          <option>Album and tracks</option>
+          <option>Music files</option>
+          <option>Photos</option>
+          <option>Social links</option>
+          <option>DJ form</option>
+          <option>Colours and layout</option>
+          <option>Whole site</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label for="when">How soon</label>
+        <select id="when">
+          <option>When you can</option>
+          <option>This week</option>
+          <option>Urgent</option>
+        </select>
+      </div>
+      <div>
+        <label for="change">What should change *</label>
+        <textarea id="change" required maxlength="2000" placeholder="Say what to add, remove, or replace. Paste the new wording if you have it."></textarea>
+        <p class="count" id="count">0 / 2000</p>
+      </div>
+      <div class="row">
+        <button class="btn primary" type="submit">Send to the developer</button>
+        <button class="btn ghost" type="button" id="lock-again">Lock this page</button>
+      </div>
+      <p class="status" id="status" role="status"></p>
+    </form>
+  </section>
+</main>
+<script src="access.js"></script>
+<script>
+(function () {
+  var MAIL = "colemanramia@gmail.com";
+  var GATE = "d1a3f578a3fa79f9a5009851d3046205ef5e729f8c2af59bbede5625369c53c0";
+  var SESSION = "ramiaClientOk";
+  var FAILS = "ramiaClientFails";
+  var lock = document.getElementById("lock");
+  var request = document.getElementById("request");
+  var lockForm = document.getElementById("lock-form");
+  var lockStatus = document.getElementById("lock-status");
+  var pass = document.getElementById("pass");
+  var lockBtn = document.getElementById("lock-btn");
+  var changeBox = document.getElementById("change");
+  var count = document.getElementById("count");
+  var phrase = sessionStorage.getItem("ramiaClientPhrase") || "";
+  var added = [];
+
+  function openMail(subject, body) {
+    window.location.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  }
+  function renderAccess() {
+    var list = document.getElementById("access-list");
+    var seen = {};
+    var emails = (RAMIA_ACCESS.emails || []).map(ramiaEmail).concat(added).filter(function (email) {
+      if (!email || seen[email]) return false;
+      seen[email] = true;
+      return true;
+    });
+    list.innerHTML = "";
+    emails.forEach(function (email) {
+      var item = document.createElement("li");
+      item.textContent = email;
+      list.appendChild(item);
+    });
+  }
+  function openRequest() {
+    lock.hidden = true;
+    request.hidden = false;
+    pass.value = "";
+    renderAccess();
+    document.getElementById("dj-email").focus();
+  }
+  function closeRequest() {
+    phrase = "";
+    sessionStorage.removeItem("ramiaClientPhrase");
+    sessionStorage.removeItem(SESSION);
+    request.hidden = true;
+    lock.hidden = false;
+    document.getElementById("status").textContent = "";
+    document.getElementById("access-status").textContent = "";
+    pass.focus();
+  }
+  function waitLeft() {
+    var until = Number(sessionStorage.getItem(FAILS) || 0);
+    return until > Date.now() ? until - Date.now() : 0;
+  }
+  function same(a, b) {
+    if (a.length !== b.length) return false;
+    var out = 0;
+    for (var i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    return out === 0;
+  }
+  function sha256(text) {
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (n) {
+        return n.toString(16).padStart(2, "0");
+      }).join("");
+    });
+  }
+
+  if (sessionStorage.getItem(SESSION) === "1") openRequest();
+
+  lockForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var left = waitLeft();
+    if (left) {
+      lockStatus.textContent = "Try again in " + Math.ceil(left / 1000) + " seconds.";
+      lockStatus.className = "status err";
+      return;
+    }
+    if (!window.crypto || !crypto.subtle) {
+      lockStatus.textContent = "Open this page from the live site.";
+      lockStatus.className = "status err";
+      return;
+    }
+    lockBtn.disabled = true;
+    sha256(pass.value).then(function (digest) {
+      lockBtn.disabled = false;
+      if (!same(digest, GATE)) {
+        var fails = Number(sessionStorage.getItem("ramiaClientCount") || 0) + 1;
+        sessionStorage.setItem("ramiaClientCount", String(fails));
+        if (fails >= 5) {
+          sessionStorage.setItem(FAILS, String(Date.now() + 30000));
+          sessionStorage.setItem("ramiaClientCount", "0");
+          lockStatus.textContent = "Too many tries. Wait 30 seconds.";
+        } else {
+          lockStatus.textContent = "That passphrase is not right.";
+        }
+        lockStatus.className = "status err";
+        pass.select();
+        return;
+      }
+      phrase = pass.value;
+      if (RAMIA_ACCESS.checkUrl) sessionStorage.setItem("ramiaClientPhrase", phrase);
+      sessionStorage.removeItem("ramiaClientCount");
+      sessionStorage.removeItem(FAILS);
+      sessionStorage.setItem(SESSION, "1");
+      lockStatus.textContent = "";
+      openRequest();
+    }).catch(function () {
+      lockBtn.disabled = false;
+      lockStatus.textContent = "Couldn't check that. Try again.";
+      lockStatus.className = "status err";
+    });
+  });
+
+  document.getElementById("lock-again").addEventListener("click", closeRequest);
+
+  function saveDj(email, name, remove) {
+    if (!RAMIA_ACCESS.checkUrl) return Promise.resolve({ ok: true });
+    if (!phrase) return Promise.reject(new Error("pass"));
+    return ramiaJsonp({ email: email, name: name || "", pass: phrase, grant: remove ? "0" : "1" });
+  }
+  function accessMessage(remove, result) {
+    if (result && result.error === "pass") return "Lock this page and enter the passphrase again.";
+    if (result && result.already && !remove) return "That email already has access.";
+    if (remove) return ramiaAccessLocked() ? "That email no longer has access." : "Saved.";
+    return "Saved. They can open the music with this email.";
+  }
+  function runAccess(remove) {
+    var status = document.getElementById("access-status");
+    var emailInput = document.getElementById("dj-email");
+    var email = ramiaEmail(emailInput.value);
+    var name = document.getElementById("dj-name").value.trim();
+    if (sessionStorage.getItem(SESSION) !== "1") { closeRequest(); return; }
+    if (!email || !emailInput.checkValidity()) {
+      status.textContent = "Add a valid DJ email.";
+      status.className = "status err";
+      emailInput.focus();
+      return;
+    }
+    var give = document.getElementById("give-access");
+    var removeBtn = document.getElementById("remove-access");
+    give.disabled = true;
+    removeBtn.disabled = true;
+    status.textContent = "Saving…";
+    status.className = "status";
+    saveDj(email, name, remove).then(function (result) {
+      give.disabled = false;
+      removeBtn.disabled = false;
+      if (result && result.ok === false) {
+        status.textContent = accessMessage(remove, result);
+        status.className = "status err";
+        return;
+      }
+      if (remove) added = added.filter(function (item) { return item !== email; });
+      else if (added.indexOf(email) === -1) added.push(email);
+      renderAccess();
+      if (!remove) document.getElementById("access-form").reset();
+      status.textContent = accessMessage(remove, result);
+      status.className = "status ok";
+    }).catch(function () {
+      give.disabled = false;
+      removeBtn.disabled = false;
+      status.textContent = "Didn't save. Try again.";
+      status.className = "status err";
+    });
+  }
+  document.getElementById("access-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    runAccess(false);
+  });
+  document.getElementById("remove-access").addEventListener("click", function () {
+    runAccess(true);
+  });
+
+  changeBox.addEventListener("input", function () {
+    count.textContent = changeBox.value.length + " / 2000";
+  });
+
+  document.getElementById("change-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var status = document.getElementById("status");
+    if (sessionStorage.getItem(SESSION) !== "1") { closeRequest(); return; }
+    if (document.getElementById("company").value) {
+      status.textContent = "Sent. The developer has this.";
+      status.className = "status ok";
+      return;
+    }
+    var name = document.getElementById("name");
+    var email = document.getElementById("email");
+    var section = document.getElementById("section");
+    var text = changeBox.value.trim();
+    if (!name.value.trim() || !email.value.trim() || !email.checkValidity() || !section.value || text.length < 8) {
+      status.textContent = "Add your name, a valid email, the part of the site, and the change.";
+      status.className = "status err";
+      return;
+    }
+    var lines = [
+      "From: " + name.value.trim(),
+      "Email: " + email.value.trim(),
+      "Part: " + section.value,
+      "How soon: " + document.getElementById("when").value,
+      "",
+      text
+    ];
+    openMail("Site change", lines.join("\n"));
+    e.currentTarget.reset();
+    count.textContent = "0 / 2000";
+    status.textContent = "Your email app is open. Send the message to finish.";
+    status.className = "status ok";
+  });
+})();
+</script>
+</body>
+</html>
