@@ -39,6 +39,10 @@
   .hero h1 span{color:var(--gold)}
   .hero p.sub{font-family:"Playfair Display",serif;font-style:italic;font-size:1.25rem;color:var(--muted);margin:14px 0 26px}
   .btns{display:flex;flex-wrap:wrap;gap:12px}
+  @media(max-width:640px){
+    .hero .btns{flex-wrap:nowrap}
+    .hero .btns .btn{flex:1 1 0;padding:12px 10px;font-size:.82rem;text-align:center;line-height:1.25}
+  }
   .btn{display:inline-block;padding:13px 24px;border-radius:6px;font-weight:600;text-decoration:none;border:2px solid var(--gold);cursor:pointer;font-size:.95rem;font-family:inherit;background:transparent;color:var(--gold)}
   .btn.primary{background:var(--gold);color:#111}
   .btn.primary:hover{background:#ffd13d}
