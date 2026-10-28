@@ -67,6 +67,7 @@
   .tracks .n{color:var(--gold);font-family:Anton,Impact,sans-serif;letter-spacing:.05em;min-width:2ch}
   .tracks .tt{flex:1 1 140px}
   .tracks .tm{color:var(--muted);font-size:.85rem}
+  .tracks .get{margin-left:auto;background:var(--gold);color:#111;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 10px;border-radius:99px}
   .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
   .gallery a.photo{position:relative;display:block;text-decoration:none}
   .gallery .photo{aspect-ratio:1/1}
@@ -177,18 +178,18 @@
         <h3>Introducing Ramia</h3>
         <p class="meta">2026 · Independent · 12 tracks</p>
         <ol class="tracks">
-          <li><span class="n">01</span><span class="tt">Coast to Coast</span><span class="tm">3:40 · 85 BPM</span></li>
-          <li><span class="n">02</span><span class="tt">Order My Steps</span><span class="tm">4:02 · 66 BPM</span></li>
-          <li><span class="n">03</span><span class="tt">Got Me Hooked</span><span class="tm">3:53 · 73 BPM</span></li>
-          <li><span class="n">04</span><span class="tt">If You Believe</span><span class="tm">3:40 · 92 BPM</span></li>
-          <li><span class="n">05</span><span class="tt">Halelujah</span><span class="tm">3:11 · 61 BPM</span></li>
-          <li><span class="n">06</span><span class="tt">Brimstone</span><span class="tm">4:02 · 70 BPM</span></li>
-          <li><span class="n">07</span><span class="tt">Cover Me</span><span class="tm">3:45 · 67 BPM</span></li>
-          <li><span class="n">08</span><span class="tt">Jump</span><span class="tm">3:39 · 73 BPM</span></li>
-          <li><span class="n">09</span><span class="tt">Mr Gunman</span><span class="tm">4:19 · 61 BPM</span></li>
-          <li><span class="n">10</span><span class="tt">Trod On</span><span class="tm">4:19 · 75 BPM</span></li>
-          <li><span class="n">11</span><span class="tt">Make a Change</span><span class="tm">3:27 · 73 BPM</span></li>
-          <li><span class="n">12</span><span class="tt">Ruler of My Destiny</span><span class="tm">4:25 · 73 BPM</span></li>
+          <li><span class="n">01</span><span class="tt">Coast to Coast</span><span class="tm">3:40 · 85 BPM</span><a class="get" href="music/01-coast-to-coast.mp3" download="Coast to Coast.mp3" data-song="Coast to Coast">Save</a></li>
+          <li><span class="n">02</span><span class="tt">Order My Steps</span><span class="tm">4:02 · 66 BPM</span><a class="get" href="music/02-order-my-steps.mp3" download="Order My Steps.mp3" data-song="Order My Steps">Save</a></li>
+          <li><span class="n">03</span><span class="tt">Got Me Hooked</span><span class="tm">3:53 · 73 BPM</span><a class="get" href="music/03-got-me-hooked.mp3" download="Got Me Hooked.mp3" data-song="Got Me Hooked">Save</a></li>
+          <li><span class="n">04</span><span class="tt">If You Believe</span><span class="tm">3:40 · 92 BPM</span><a class="get" href="music/04-if-you-believe.mp3" download="If You Believe.mp3" data-song="If You Believe">Save</a></li>
+          <li><span class="n">05</span><span class="tt">Halelujah</span><span class="tm">3:11 · 61 BPM</span><a class="get" href="music/05-halelujah.mp3" download="Halelujah.mp3" data-song="Halelujah">Save</a></li>
+          <li><span class="n">06</span><span class="tt">Brimstone</span><span class="tm">4:02 · 70 BPM</span><a class="get" href="music/06-brimstone.mp3" download="Brimstone.mp3" data-song="Brimstone">Save</a></li>
+          <li><span class="n">07</span><span class="tt">Cover Me</span><span class="tm">3:45 · 67 BPM</span><a class="get" href="music/07-cover-me.mp3" download="Cover Me.mp3" data-song="Cover Me">Save</a></li>
+          <li><span class="n">08</span><span class="tt">Jump</span><span class="tm">3:39 · 73 BPM</span><a class="get" href="music/08-jump.mp3" download="Jump.mp3" data-song="Jump">Save</a></li>
+          <li><span class="n">09</span><span class="tt">Mr Gunman</span><span class="tm">4:19 · 61 BPM</span><a class="get" href="music/09-mr-gunman.mp3" download="Mr Gunman.mp3" data-song="Mr Gunman">Save</a></li>
+          <li><span class="n">10</span><span class="tt">Trod On</span><span class="tm">4:19 · 75 BPM</span><a class="get" href="music/10-trod-on.mp3" download="Trod On.mp3" data-song="Trod On">Save</a></li>
+          <li><span class="n">11</span><span class="tt">Make a Change</span><span class="tm">3:27 · 73 BPM</span><a class="get" href="music/11-make-a-change.mp3" download="Make a Change.mp3" data-song="Make a Change">Save</a></li>
+          <li><span class="n">12</span><span class="tt">Ruler of My Destiny</span><span class="tm">4:25 · 73 BPM</span><a class="get" href="music/12-ruler-of-my-destiny.mp3" download="Ruler of My Destiny.mp3" data-song="Ruler of My Destiny">Save</a></li>
         </ol>
         <div class="btns">
           <button class="btn primary" type="button" id="get-music">Get the music</button>
@@ -294,6 +295,12 @@
   var DRIVE = "https://drive.google.com/drive/folders/1_mYbhyizHKkoVh2RcW8YjGNinUCRMq3C";
   var MAIL = "colemanramia@gmail.com";
   var SONGS = ["Coast to Coast","Order My Steps","Got Me Hooked","If You Believe","Halelujah","Brimstone","Cover Me","Jump","Mr Gunman","Trod On","Make a Change","Ruler of My Destiny"];
+  document.querySelectorAll(".tracks a.get").forEach(function (link) {
+    link.addEventListener("click", function () {
+      if (typeof plausible !== "function") return;
+      plausible("Download", { props: { song: link.getAttribute("data-song") } });
+    });
+  });
 
   function openMail(subject, body) {
     window.location.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
