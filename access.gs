@@ -2,9 +2,11 @@ var GATE = "cc437fbc854e76247ad58a80a377907dcede4a3a00c5a35429f787fc5a0a928b";
 
 function doGet(e) {
   var params = (e && e.parameter) || {};
-  var result = params.grant == null || params.grant === ""
-    ? { ok: allowed_(params.email) }
-    : grant_(params.email, params.name, params.pass, params.grant === "0");
+  var result = params.list === "1"
+    ? list_(params.pass)
+    : params.grant == null || params.grant === ""
+      ? { ok: allowed_(params.email) }
+      : grant_(params.email, params.name, params.pass, params.grant === "0");
   var body = JSON.stringify(result);
   var callback = String(params.callback || "");
   if (/^ramiaCb\d+$/.test(callback)) {
@@ -35,6 +37,18 @@ function grant_(email, name, pass, remove) {
   }
   if (!remove) sheet.appendRow([email, name || "", new Date()]);
   return { ok: true };
+}
+
+function list_(pass) {
+  if (sha256_(String(pass || "")) !== GATE) return { ok: false, error: "pass" };
+  var rows = accessSheet_().getDataRange().getValues();
+  var emails = [];
+  for (var i = 1; i < rows.length; i++) {
+    var email = normalize_(rows[i][0]);
+    if (!email) continue;
+    emails.push({ email: email, name: String(rows[i][1] || "") });
+  }
+  return { ok: true, emails: emails };
 }
 
 function onAccessSheet_(email) {

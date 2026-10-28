@@ -68,8 +68,10 @@
   .tracks .tt{flex:1 1 140px}
   .tracks .tm{color:var(--muted);font-size:.85rem}
   .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}
+  .gallery a.photo{position:relative;display:block;text-decoration:none}
   .gallery .photo{aspect-ratio:1/1}
   .gallery .photo:first-child{grid-column:span 2;grid-row:span 2}
+  .gallery .save{position:absolute;right:10px;bottom:10px;background:var(--gold);color:#111;font-size:.75rem;font-weight:600;padding:6px 12px;border-radius:99px}
   @media(max-width:640px){.gallery{grid-template-columns:repeat(2,1fr)}.gallery .photo:first-child{grid-column:span 2;grid-row:span 1}}
   .socials{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:28px}
   .socials a,.socials .card{display:block;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;text-decoration:none}
@@ -106,6 +108,12 @@
   dialog .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
   [hidden]{display:none!important}
 </style>
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-NOIUbZ9XXpuWsY5QLwQuI.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
 </head>
 <body>
 <div class="stripe"></div>
@@ -194,13 +202,13 @@
 <section id="photos">
   <div class="wrap">
     <h2>Press Photos</h2>
-    <p class="lead">High-res images for posters, flyers, and socials.</p>
+    <p class="lead">Save a photo for posters, flyers, and socials.</p>
     <div class="gallery">
-      <div class="photo"><img src="images/press-photo-1.jpg" alt="Press photo of Ramia"></div>
-      <div class="photo"><img src="images/press-photo-2.jpg" alt="Press photo of Ramia"></div>
-      <div class="photo"><img src="images/press-photo-3.jpg" alt="Press photo of Ramia"></div>
-      <div class="photo"><img src="images/press-photo-4.jpg" alt="Press photo of Ramia"></div>
-      <div class="photo"><img src="images/press-photo-5.jpg" alt="Press photo of Ramia"></div>
+      <a class="photo" href="images/press-photo-1.jpg" download="ramia-press-1.jpg"><img src="images/press-photo-1.jpg" alt="Press photo of Ramia"><span class="save">Save</span></a>
+      <a class="photo" href="images/press-photo-2.jpg" download="ramia-press-2.jpg"><img src="images/press-photo-2.jpg" alt="Press photo of Ramia"><span class="save">Save</span></a>
+      <a class="photo" href="images/press-photo-3.jpg" download="ramia-press-3.jpg"><img src="images/press-photo-3.jpg" alt="Press photo of Ramia"><span class="save">Save</span></a>
+      <a class="photo" href="images/press-photo-4.jpg" download="ramia-press-4.jpg"><img src="images/press-photo-4.jpg" alt="Press photo of Ramia"><span class="save">Save</span></a>
+      <a class="photo" href="images/press-photo-5.jpg" download="ramia-press-5.jpg"><img src="images/press-photo-5.jpg" alt="Press photo of Ramia"><span class="save">Save</span></a>
     </div>
   </div>
 </section>

@@ -43,8 +43,10 @@
   .status.ok{color:#5fd08a}
   .status.err{color:#ff7b7b}
   .count{color:var(--muted);font-size:.8rem;text-align:right}
-  .access-list{list-style:none;display:grid;gap:8px;margin-top:14px}
+  .access-head{margin:22px 0 10px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  .access-list{list-style:none;display:grid;gap:8px}
   .access-list li{background:var(--field);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+  .access-list .who{display:block;color:var(--muted);font-size:.85rem;margin-top:2px}
   .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
   [hidden]{display:none!important}
 </style>
@@ -91,6 +93,8 @@
       </div>
       <p class="status" id="access-status" role="status"></p>
     </form>
+    <h3 class="access-head">Emails with access</h3>
+    <p class="status" id="access-empty">None yet.</p>
     <ul class="access-list" id="access-list"></ul>
     <h2>Site changes</h2>
     <p class="lead">Describe what should change. Sending opens an email with the request. Nothing here is published on its own.</p>
@@ -160,31 +164,85 @@
   var changeBox = document.getElementById("change");
   var count = document.getElementById("count");
   var phrase = sessionStorage.getItem("ramiaClientPhrase") || "";
-  var added = [];
+  var STORED = "ramiaAccessEmails";
 
   function openMail(subject, body) {
     window.location.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
   }
-  function renderAccess() {
+  function readStored() {
+    try {
+      var rows = JSON.parse(localStorage.getItem(STORED) || "[]");
+      return Array.isArray(rows) ? rows : [];
+    } catch (err) {
+      return [];
+    }
+  }
+  function writeStored(rows) {
+    localStorage.setItem(STORED, JSON.stringify(rows));
+  }
+  function fileRows() {
+    return (RAMIA_ACCESS.emails || []).map(function (email) {
+      return { email: ramiaEmail(email), name: "" };
+    }).filter(function (row) { return row.email; });
+  }
+  function renderAccess(rows) {
     var list = document.getElementById("access-list");
+    var empty = document.getElementById("access-empty");
     var seen = {};
-    var emails = (RAMIA_ACCESS.emails || []).map(ramiaEmail).concat(added).filter(function (email) {
-      if (!email || seen[email]) return false;
+    var emails = [];
+    (rows || []).forEach(function (row) {
+      var email = ramiaEmail(row && row.email != null ? row.email : row);
+      if (!email || seen[email]) return;
       seen[email] = true;
-      return true;
+      emails.push({ email: email, name: row && row.name ? String(row.name).trim() : "" });
     });
     list.innerHTML = "";
-    emails.forEach(function (email) {
+    empty.hidden = emails.length > 0;
+    emails.forEach(function (row) {
       var item = document.createElement("li");
-      item.textContent = email;
+      item.textContent = row.email;
+      if (row.name) {
+        var who = document.createElement("span");
+        who.className = "who";
+        who.textContent = row.name;
+        item.appendChild(who);
+      }
       list.appendChild(item);
+    });
+  }
+  function showLocal() {
+    renderAccess(fileRows().concat(readStored()));
+  }
+  function loadAccess() {
+    if (!RAMIA_ACCESS.checkUrl) {
+      showLocal();
+      return Promise.resolve();
+    }
+    if (!phrase) {
+      renderAccess(fileRows());
+      return Promise.resolve();
+    }
+    return ramiaJsonp({ list: "1", pass: phrase }).then(function (data) {
+      if (!data || data.ok === false) {
+        document.getElementById("access-status").textContent = data && data.error === "pass"
+          ? "Lock this page and enter the passphrase again."
+          : "Couldn't load the access list.";
+        document.getElementById("access-status").className = "status err";
+        renderAccess(fileRows());
+        return;
+      }
+      renderAccess(fileRows().concat(data.emails || []));
+    }).catch(function () {
+      document.getElementById("access-status").textContent = "Couldn't load the access list.";
+      document.getElementById("access-status").className = "status err";
+      renderAccess(fileRows());
     });
   }
   function openRequest() {
     lock.hidden = true;
     request.hidden = false;
     pass.value = "";
-    renderAccess();
+    loadAccess();
     document.getElementById("dj-email").focus();
   }
   function closeRequest() {
@@ -300,9 +358,14 @@
         status.className = "status err";
         return;
       }
-      if (remove) added = added.filter(function (item) { return item !== email; });
-      else if (added.indexOf(email) === -1) added.push(email);
-      renderAccess();
+      if (!RAMIA_ACCESS.checkUrl) {
+        var rows = readStored().filter(function (row) { return ramiaEmail(row.email) !== email; });
+        if (!remove) rows.push({ email: email, name: name });
+        writeStored(rows);
+        showLocal();
+      } else {
+        loadAccess();
+      }
       if (!remove) document.getElementById("access-form").reset();
       status.textContent = accessMessage(remove, result);
       status.className = "status ok";
