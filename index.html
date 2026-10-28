@@ -394,6 +394,7 @@
     document.getElementById("gate-submit").textContent = file ? "Download" : "Open the music";
     gateStatus.textContent = "";
     gateStatus.className = "status";
+    if (!gateEmail.value.trim()) gateEmail.value = rememberedEmail();
     gate.showModal();
     gateEmail.focus();
   }
@@ -442,18 +443,10 @@
     link.addEventListener("click", function (e) {
       e.preventDefault();
       stopPreview();
-      if (rememberedEmail()) {
-        deliverSong(link, rememberedEmail());
-        return;
-      }
       openGate({ type: "file", link: link });
     });
   });
   document.getElementById("get-music").addEventListener("click", function () {
-    if (rememberedEmail()) {
-      openAlbum(rememberedEmail(), null);
-      return;
-    }
     openGate({ type: "drive" });
   });
   document.getElementById("gate-close").addEventListener("click", function () { gate.close(); });
