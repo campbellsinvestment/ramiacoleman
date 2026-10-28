@@ -277,10 +277,10 @@
 
 <dialog id="gate" aria-labelledby="gate-title">
   <h3 id="gate-title">Get the music</h3>
-  <p>Enter your email to open the album files. Radio edits, clean versions, and stems are available on request.</p>
+  <p>Enter your email to save a song or open the album files. Radio edits, clean versions, and stems are available on request.</p>
   <form id="gate-form">
     <label for="gate-email">Email</label>
-    <input id="gate-email" type="email" required autocomplete="email" placeholder="name@email.com">
+    <input id="gate-email" type="email" required autocomplete="email" placeholder="dj@email.com">
     <p class="status" id="gate-status" role="status"></p>
     <div class="actions">
       <button class="btn ghost" type="button" id="gate-close">Cancel</button>
@@ -295,12 +295,36 @@
   var DRIVE = "https://drive.google.com/drive/folders/1_mYbhyizHKkoVh2RcW8YjGNinUCRMq3C";
   var MAIL = "colemanramia@gmail.com";
   var SONGS = ["Coast to Coast","Order My Steps","Got Me Hooked","If You Believe","Halelujah","Brimstone","Cover Me","Jump","Mr Gunman","Trod On","Make a Change","Ruler of My Destiny"];
-  document.querySelectorAll(".tracks a.get").forEach(function (link) {
-    link.addEventListener("click", function () {
-      if (typeof plausible !== "function") return;
-      plausible("Download", { props: { song: link.getAttribute("data-song") } });
-    });
-  });
+  var MUSIC_EMAIL = "ramiaMusicEmail";
+  var SHEET_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSehzcOj9_2QrICNBNUbBlW0sphlH3_duOhDk0vIa-spXX5f0w/formResponse";
+  var pending = null;
+
+  function logDownload(email, song) {
+    if (!email || !song) return;
+    var body = new URLSearchParams();
+    body.set("entry.1180459635", email);
+    body.set("entry.854534733", song);
+    fetch(SHEET_FORM, { method: "POST", mode: "no-cors", body: body }).catch(function () {});
+  }
+
+  function rememberedEmail() {
+    return sessionStorage.getItem(MUSIC_EMAIL) || "";
+  }
+  function trackDownload(link) {
+    if (typeof plausible !== "function") return;
+    plausible("Download", { props: { song: link.getAttribute("data-song") } });
+  }
+  function startDownload(link) {
+    var song = link.getAttribute("data-song") || "";
+    logDownload(rememberedEmail(), song);
+    var file = document.createElement("a");
+    file.href = link.getAttribute("href");
+    file.download = link.getAttribute("download") || "";
+    document.body.appendChild(file);
+    file.click();
+    file.remove();
+    trackDownload(link);
+  }
 
   function openMail(subject, body) {
     window.location.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
@@ -310,22 +334,40 @@
   var gateForm = document.getElementById("gate-form");
   var gateEmail = document.getElementById("gate-email");
   var gateStatus = document.getElementById("gate-status");
-  document.getElementById("get-music").addEventListener("click", function () {
+  function openGate(next) {
+    pending = next;
     gateStatus.textContent = "";
+    gateStatus.className = "status";
     gate.showModal();
     gateEmail.focus();
+  }
+  document.querySelectorAll(".tracks a.get").forEach(function (link) {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      if (rememberedEmail()) { startDownload(link); return; }
+      openGate({ type: "file", link: link });
+    });
   });
-  document.getElementById("gate-close").addEventListener("click", function () { gate.close(); });
+  document.getElementById("get-music").addEventListener("click", function () {
+    if (rememberedEmail()) {
+      window.open(DRIVE, "_blank", "noopener");
+      return;
+    }
+    openGate({ type: "drive" });
+  });
+  document.getElementById("gate-close").addEventListener("click", function () { pending = null; gate.close(); });
+  gate.addEventListener("close", function () { pending = null; });
   gate.addEventListener("click", function (e) {
     var box = gate.getBoundingClientRect();
     var inside = e.clientX >= box.left && e.clientX <= box.right && e.clientY >= box.top && e.clientY <= box.bottom;
-    if (!inside) gate.close();
+    if (!inside) { pending = null; gate.close(); }
   });
   gateForm.addEventListener("submit", function (e) {
     e.preventDefault();
     var email = gateEmail.value.trim();
     if (!gateEmail.checkValidity()) { gateEmail.reportValidity(); return; }
-    var popup = window.open("about:blank", "_blank");
+    var next = pending;
+    var popup = next && next.type === "drive" ? window.open("about:blank", "_blank") : null;
     gateStatus.textContent = "Checking…";
     gateStatus.className = "status";
     ramiaAllowed(email).then(function (ok) {
@@ -335,7 +377,10 @@
         gateStatus.className = "status err";
         return;
       }
-      if (popup) {
+      sessionStorage.setItem(MUSIC_EMAIL, ramiaEmail(email));
+      pending = null;
+      if (next && next.type === "file") startDownload(next.link);
+      else if (popup) {
         popup.location.href = DRIVE;
         try { popup.opener = null; } catch (err) {}
       } else {
