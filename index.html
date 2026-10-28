@@ -319,6 +319,7 @@
   var MUSIC_EMAIL = "ramiaMusicEmail";
   var SHEET_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSehzcOj9_2QrICNBNUbBlW0sphlH3_duOhDk0vIa-spXX5f0w/formResponse";
   var pending = null;
+  var gateGen = 0;
 
   function logSubmission(fields) {
     var body = new URLSearchParams();
@@ -337,8 +338,8 @@
     Object.keys(map).forEach(function (key) {
       if (map[key]) body.set(key, map[key]);
     });
-    if (!fields.email) return;
-    fetch(SHEET_FORM, { method: "POST", mode: "no-cors", body: body }).catch(function () {});
+    if (!fields.email) return Promise.resolve();
+    return fetch(SHEET_FORM, { method: "POST", mode: "no-cors", body: body }).catch(function () {});
   }
 
   function rememberedEmail() {
@@ -348,14 +349,6 @@
     if (typeof plausible !== "function") return;
     plausible("Download", { props: { song: link.getAttribute("data-song") } });
   }
-  function linkForSong(name) {
-    var links = document.querySelectorAll(".tracks a.get");
-    var i;
-    for (i = 0; i < links.length; i++) {
-      if (links[i].getAttribute("data-song") === name) return links[i];
-    }
-    return null;
-  }
   function saveFile(link) {
     var file = document.createElement("a");
     file.href = link.getAttribute("href");
@@ -364,6 +357,27 @@
     file.click();
     file.remove();
     trackDownload(link);
+  }
+  function deliverSong(link, email) {
+    return logSubmission({
+      email: email,
+      song: link.getAttribute("data-song"),
+      request: "Download"
+    }).then(function () { saveFile(link); });
+  }
+  function openAlbum(email, popup) {
+    return logSubmission({
+      email: email,
+      song: "Album files",
+      request: "Download"
+    }).then(function () {
+      if (popup) {
+        popup.location.href = DRIVE;
+        try { popup.opener = null; } catch (err) {}
+      } else {
+        window.open(DRIVE, "_blank", "noopener");
+      }
+    });
   }
 
   var gate = document.getElementById("gate");
@@ -375,9 +389,9 @@
     var file = next && next.type === "file";
     document.getElementById("gate-title").textContent = file ? "Save this song" : "Get the music";
     document.getElementById("gate-copy").textContent = file
-      ? "Enter your email to request this song. It downloads when you send the request."
+      ? "Enter your email. The song downloads once it's sent."
       : "Enter your email to open the album files. Radio edits, clean versions, and stems are available on request.";
-    document.getElementById("gate-submit").textContent = file ? "Continue" : "Open the music";
+    document.getElementById("gate-submit").textContent = file ? "Download" : "Open the music";
     gateStatus.textContent = "";
     gateStatus.className = "status";
     gate.showModal();
@@ -429,7 +443,7 @@
       e.preventDefault();
       stopPreview();
       if (rememberedEmail()) {
-        prepareRequest(link.getAttribute("data-song"), rememberedEmail());
+        deliverSong(link, rememberedEmail());
         return;
       }
       openGate({ type: "file", link: link });
@@ -437,13 +451,13 @@
   });
   document.getElementById("get-music").addEventListener("click", function () {
     if (rememberedEmail()) {
-      window.open(DRIVE, "_blank", "noopener");
+      openAlbum(rememberedEmail(), null);
       return;
     }
     openGate({ type: "drive" });
   });
-  document.getElementById("gate-close").addEventListener("click", function () { pending = null; gate.close(); });
-  gate.addEventListener("close", function () { pending = null; });
+  document.getElementById("gate-close").addEventListener("click", function () { gate.close(); });
+  gate.addEventListener("close", function () { gateGen += 1; pending = null; });
   gate.addEventListener("click", function (e) {
     var box = gate.getBoundingClientRect();
     var inside = e.clientX >= box.left && e.clientX <= box.right && e.clientY >= box.top && e.clientY <= box.bottom;
@@ -454,11 +468,16 @@
     var email = gateEmail.value.trim();
     if (!gateEmail.checkValidity()) { gateEmail.reportValidity(); return; }
     var next = pending;
+    var gen = gateGen;
     var popup = next && next.type === "drive" ? window.open("about:blank", "_blank") : null;
     gateStatus.textContent = "Checking…";
     gateStatus.className = "status";
     ramiaAllowed(email).then(function (ok) {
-      if (!ok) {
+      if (gen !== gateGen) {
+        if (popup) popup.close();
+        return;
+      }
+      if (!ok || !next) {
         if (popup) popup.close();
         gateStatus.textContent = "That email doesn't have access yet.";
         gateStatus.className = "status err";
@@ -466,14 +485,13 @@
       }
       sessionStorage.setItem(MUSIC_EMAIL, ramiaEmail(email));
       pending = null;
-      if (next && next.type === "file") prepareRequest(next.link.getAttribute("data-song"), ramiaEmail(email));
-      else if (popup) {
-        popup.location.href = DRIVE;
-        try { popup.opener = null; } catch (err) {}
-      } else {
-        window.open(DRIVE, "_blank", "noopener");
-      }
-      gate.close();
+      gateStatus.textContent = "Sending…";
+      var sent = next.type === "file"
+        ? deliverSong(next.link, ramiaEmail(email))
+        : openAlbum(ramiaEmail(email), popup);
+      sent.then(function () {
+        if (gen === gateGen) gate.close();
+      });
     }).catch(function () {
       if (popup) popup.close();
       gateStatus.textContent = "Couldn't check that email. Try again.";
@@ -515,38 +533,6 @@
     jingleDetails.hidden = !jingle;
     if (dub && !dubList.children.length) dubList.appendChild(songRow());
   }
-  function prepareRequest(song, email) {
-    var emailInput = document.getElementById("email");
-    if (email && !emailInput.value.trim()) emailInput.value = email;
-    var dub = document.querySelector('input[name="request"][value="Dub"]');
-    dub.checked = true;
-    refreshRequest();
-    var selects = dubList.querySelectorAll("select");
-    var i;
-    var already = false;
-    for (i = 0; i < selects.length; i++) {
-      if (selects[i].value === song) { already = true; break; }
-    }
-    if (!already) {
-      var target = null;
-      for (i = 0; i < selects.length; i++) {
-        if (!selects[i].dataset.chosen) { target = selects[i]; break; }
-      }
-      if (!target) {
-        var row = songRow();
-        dubList.appendChild(row);
-        target = row.querySelector("select");
-      }
-      target.value = song;
-      target.dataset.chosen = "1";
-    }
-    document.getElementById("submit").scrollIntoView({ behavior: "smooth", block: "start" });
-    if (!document.getElementById("name").value.trim()) {
-      window.setTimeout(function () {
-        document.getElementById("name").focus({ preventScroll: true });
-      }, 450);
-    }
-  }
   document.querySelectorAll('input[name="request"]').forEach(function (el) {
     el.addEventListener("change", refreshRequest);
   });
@@ -570,18 +556,13 @@
       return;
     }
     var songs = Array.prototype.map.call(dubList.querySelectorAll("select"), function (el) { return el.value; });
-    var saved = 0;
     var seen = {};
     var songNames = [];
     if (picks.indexOf("Dub") !== -1) {
-      songs.forEach(function (name) {
-        if (seen[name]) return;
-        seen[name] = true;
-        songNames.push(name);
-        var link = linkForSong(name);
-        if (!link) return;
-        saveFile(link);
-        saved += 1;
+      songs.forEach(function (songName) {
+        if (seen[songName]) return;
+        seen[songName] = true;
+        songNames.push(songName);
       });
     }
     logSubmission({
@@ -599,11 +580,7 @@
     form.reset();
     dubList.textContent = "";
     refreshRequest();
-    status.textContent = saved > 1
-      ? "Sent. The songs are downloading."
-      : saved
-        ? "Sent. The song is downloading."
-        : "Sent.";
+    status.textContent = "Sent.";
     status.className = "status ok";
   });
 })();
