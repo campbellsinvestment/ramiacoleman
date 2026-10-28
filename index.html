@@ -28,6 +28,7 @@
   nav a{text-decoration:none;color:var(--muted)}
   nav a:hover{color:var(--gold)}
   @media(max-width:640px){nav ul li:not(:last-child){display:none}}
+  #submit{scroll-margin-top:72px}
   .hero{padding:72px 0 56px;background:
     radial-gradient(900px 400px at 85% -10%,rgba(242,183,5,.18),transparent 60%),
     radial-gradient(700px 400px at 0% 100%,rgba(31,138,76,.25),transparent 60%)}
@@ -279,14 +280,14 @@
 
 <dialog id="gate" aria-labelledby="gate-title">
   <h3 id="gate-title">Get the music</h3>
-  <p>Enter your email to save a song or open the album files. Radio edits, clean versions, and stems are available on request.</p>
+  <p id="gate-copy">Enter your email to open the album files. Radio edits, clean versions, and stems are available on request.</p>
   <form id="gate-form">
     <label for="gate-email">Email</label>
     <input id="gate-email" type="email" required autocomplete="email" placeholder="dj@email.com">
     <p class="status" id="gate-status" role="status"></p>
     <div class="actions">
       <button class="btn ghost" type="button" id="gate-close">Cancel</button>
-      <button class="btn primary" type="submit">Open the music</button>
+      <button class="btn primary" type="submit" id="gate-submit">Open the music</button>
     </div>
   </form>
 </dialog>
@@ -295,17 +296,29 @@
 <script>
 (function () {
   var DRIVE = "https://drive.google.com/drive/folders/1_mYbhyizHKkoVh2RcW8YjGNinUCRMq3C";
-  var MAIL = "colemanramia@gmail.com";
   var SONGS = ["Coast to Coast","Order My Steps","Got Me Hooked","If You Believe","Halelujah","Brimstone","Cover Me","Jump","Mr Gunman","Trod On","Make a Change","Ruler of My Destiny"];
   var MUSIC_EMAIL = "ramiaMusicEmail";
   var SHEET_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSehzcOj9_2QrICNBNUbBlW0sphlH3_duOhDk0vIa-spXX5f0w/formResponse";
   var pending = null;
 
-  function logDownload(email, song) {
-    if (!email || !song) return;
+  function logSubmission(fields) {
     var body = new URLSearchParams();
-    body.set("entry.1180459635", email);
-    body.set("entry.854534733", song);
+    var map = {
+      "entry.1180459635": fields.email,
+      "entry.854534733": fields.song,
+      "entry.1733902248": fields.show,
+      "entry.1233544463": fields.request,
+      "entry.1001463141": fields.role,
+      "entry.990108255": fields.city,
+      "entry.119088640": fields.dub,
+      "entry.1083306414": fields.jingle,
+      "entry.1985767807": fields.mixes,
+      "entry.1686673796": fields.message
+    };
+    Object.keys(map).forEach(function (key) {
+      if (map[key]) body.set(key, map[key]);
+    });
+    if (!fields.email) return;
     fetch(SHEET_FORM, { method: "POST", mode: "no-cors", body: body }).catch(function () {});
   }
 
@@ -316,9 +329,15 @@
     if (typeof plausible !== "function") return;
     plausible("Download", { props: { song: link.getAttribute("data-song") } });
   }
-  function startDownload(link) {
-    var song = link.getAttribute("data-song") || "";
-    logDownload(rememberedEmail(), song);
+  function linkForSong(name) {
+    var links = document.querySelectorAll(".tracks a.get");
+    var i;
+    for (i = 0; i < links.length; i++) {
+      if (links[i].getAttribute("data-song") === name) return links[i];
+    }
+    return null;
+  }
+  function saveFile(link) {
     var file = document.createElement("a");
     file.href = link.getAttribute("href");
     file.download = link.getAttribute("download") || "";
@@ -328,16 +347,18 @@
     trackDownload(link);
   }
 
-  function openMail(subject, body) {
-    window.location.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-  }
-
   var gate = document.getElementById("gate");
   var gateForm = document.getElementById("gate-form");
   var gateEmail = document.getElementById("gate-email");
   var gateStatus = document.getElementById("gate-status");
   function openGate(next) {
     pending = next;
+    var file = next && next.type === "file";
+    document.getElementById("gate-title").textContent = file ? "Save this song" : "Get the music";
+    document.getElementById("gate-copy").textContent = file
+      ? "Enter your email to request this song. It downloads when you send the request."
+      : "Enter your email to open the album files. Radio edits, clean versions, and stems are available on request.";
+    document.getElementById("gate-submit").textContent = file ? "Continue" : "Open the music";
     gateStatus.textContent = "";
     gateStatus.className = "status";
     gate.showModal();
@@ -346,7 +367,10 @@
   document.querySelectorAll(".tracks a.get").forEach(function (link) {
     link.addEventListener("click", function (e) {
       e.preventDefault();
-      if (rememberedEmail()) { startDownload(link); return; }
+      if (rememberedEmail()) {
+        prepareRequest(link.getAttribute("data-song"), rememberedEmail());
+        return;
+      }
       openGate({ type: "file", link: link });
     });
   });
@@ -381,7 +405,7 @@
       }
       sessionStorage.setItem(MUSIC_EMAIL, ramiaEmail(email));
       pending = null;
-      if (next && next.type === "file") startDownload(next.link);
+      if (next && next.type === "file") prepareRequest(next.link.getAttribute("data-song"), ramiaEmail(email));
       else if (popup) {
         popup.location.href = DRIVE;
         try { popup.opener = null; } catch (err) {}
@@ -430,6 +454,38 @@
     jingleDetails.hidden = !jingle;
     if (dub && !dubList.children.length) dubList.appendChild(songRow());
   }
+  function prepareRequest(song, email) {
+    var emailInput = document.getElementById("email");
+    if (email && !emailInput.value.trim()) emailInput.value = email;
+    var dub = document.querySelector('input[name="request"][value="Dub"]');
+    dub.checked = true;
+    refreshRequest();
+    var selects = dubList.querySelectorAll("select");
+    var i;
+    var already = false;
+    for (i = 0; i < selects.length; i++) {
+      if (selects[i].value === song) { already = true; break; }
+    }
+    if (!already) {
+      var target = null;
+      for (i = 0; i < selects.length; i++) {
+        if (!selects[i].dataset.chosen) { target = selects[i]; break; }
+      }
+      if (!target) {
+        var row = songRow();
+        dubList.appendChild(row);
+        target = row.querySelector("select");
+      }
+      target.value = song;
+      target.dataset.chosen = "1";
+    }
+    document.getElementById("submit").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!document.getElementById("name").value.trim()) {
+      window.setTimeout(function () {
+        document.getElementById("name").focus({ preventScroll: true });
+      }, 450);
+    }
+  }
   document.querySelectorAll('input[name="request"]').forEach(function (el) {
     el.addEventListener("change", refreshRequest);
   });
@@ -453,23 +509,40 @@
       return;
     }
     var songs = Array.prototype.map.call(dubList.querySelectorAll("select"), function (el) { return el.value; });
-    var lines = [
-      "DJ / show: " + name.value.trim(),
-      "Email: " + email.value.trim(),
-      "Request: " + picks.join(" + "),
-      "You are a: " + document.getElementById("type").value,
-      document.getElementById("city").value.trim() ? "City: " + document.getElementById("city").value.trim() : "",
-      picks.indexOf("Dub") === -1 ? "" : "Songs: " + songs.join(", "),
-      document.getElementById("dub-details").value.trim() ? "Dub: " + document.getElementById("dub-details").value.trim() : "",
-      document.getElementById("jingle-details").value.trim() ? "Jingle: " + document.getElementById("jingle-details").value.trim() : "",
-      document.getElementById("link").value.trim() ? "Mixes: " + document.getElementById("link").value.trim() : "",
-      document.getElementById("msg").value.trim() ? "Message: " + document.getElementById("msg").value.trim() : ""
-    ].filter(Boolean);
-    openMail("Dub / jingle request", lines.join("\n"));
+    var saved = 0;
+    var seen = {};
+    var songNames = [];
+    if (picks.indexOf("Dub") !== -1) {
+      songs.forEach(function (name) {
+        if (seen[name]) return;
+        seen[name] = true;
+        songNames.push(name);
+        var link = linkForSong(name);
+        if (!link) return;
+        saveFile(link);
+        saved += 1;
+      });
+    }
+    logSubmission({
+      email: ramiaEmail(email.value),
+      song: songNames.join(", "),
+      show: name.value.trim(),
+      request: picks.join(" + "),
+      role: document.getElementById("type").value,
+      city: document.getElementById("city").value.trim(),
+      dub: document.getElementById("dub-details").value.trim(),
+      jingle: document.getElementById("jingle-details").value.trim(),
+      mixes: document.getElementById("link").value.trim(),
+      message: document.getElementById("msg").value.trim()
+    });
     form.reset();
     dubList.textContent = "";
     refreshRequest();
-    status.textContent = "Your email app is open. Send the message to finish.";
+    status.textContent = saved > 1
+      ? "Sent. The songs are downloading."
+      : saved
+        ? "Sent. The song is downloading."
+        : "Sent.";
     status.className = "status ok";
   });
 })();
