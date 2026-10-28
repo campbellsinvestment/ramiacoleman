@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>ramia | Site changes</title>
+<title>ramia | Client</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -18,11 +18,11 @@
   a{color:inherit}
   .stripe{height:6px;background:linear-gradient(90deg,var(--green) 0 33.3%,var(--gold) 33.3% 66.6%,var(--red) 66.6%)}
   nav{border-bottom:1px solid var(--line);background:rgba(36,48,40,.94)}
-  nav .bar{max-width:720px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+  nav .bar{max-width:960px;margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
   nav .brand{font-family:Anton,Impact,sans-serif;letter-spacing:.06em;text-transform:uppercase;text-decoration:none}
   nav a.back{color:var(--muted);text-decoration:none;font-size:.85rem}
   nav a.back:hover{color:var(--gold)}
-  main{max-width:720px;margin:0 auto;padding:48px 20px 72px}
+  main{max-width:960px;margin:0 auto;padding:48px 20px 72px}
   h1,h2{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.03em;text-transform:uppercase;line-height:1.05}
   h1{font-size:clamp(2.4rem,6vw,3.4rem)}
   h1::after{content:"";display:block;width:64px;height:4px;margin-top:12px;background:linear-gradient(90deg,var(--green),var(--gold),var(--red))}
@@ -43,10 +43,14 @@
   .status.ok{color:#5fd08a}
   .status.err{color:#ff7b7b}
   .count{color:var(--muted);font-size:.8rem;text-align:right}
-  .access-head{margin:22px 0 10px;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
-  .access-list{list-style:none;display:grid;gap:8px}
-  .access-list li{background:var(--field);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
-  .access-list .who{display:block;color:var(--muted);font-size:.85rem;margin-top:2px}
+  .submissions{list-style:none;display:grid;gap:10px}
+  .sub{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:grid;gap:4px}
+  .sub .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline}
+  .sub .who{font-weight:600}
+  .sub .when{color:var(--muted);font-size:.85rem}
+  .sub .song{color:var(--gold);white-space:pre-wrap}
+  .sub .meta,.sub .detail{color:var(--muted);font-size:.9rem}
+  .sub .detail{white-space:pre-wrap}
   .hp{position:absolute;left:-9999px;height:0;overflow:hidden}
   [hidden]{display:none!important}
 </style>
@@ -62,7 +66,7 @@
 <main>
   <section id="lock">
     <h1>Client</h1>
-    <p class="lead">This page is locked. Enter the passphrase to give a DJ the music, or to send a site change.</p>
+    <p class="lead">This page is locked. Enter the passphrase to see song requests and visits.</p>
     <form class="sheet" id="lock-form">
       <div>
         <label for="pass">Passphrase</label>
@@ -75,27 +79,15 @@
 
   <section id="request" hidden>
     <h1>Client</h1>
-    <p class="lead">Give a DJ access to the album files, or send a change for the developer to make.</p>
-    <h2>Music access</h2>
-    <p class="lead">Add the DJ's email. They enter that same email on the site to open the album.</p>
-    <form class="sheet" id="access-form" novalidate>
-      <div>
-        <label for="dj-name">DJ / show name</label>
-        <input id="dj-name" autocomplete="name">
-      </div>
-      <div>
-        <label for="dj-email">DJ email *</label>
-        <input id="dj-email" type="email" required autocomplete="off" placeholder="dj@email.com">
-      </div>
-      <div class="row">
-        <button class="btn primary" id="give-access" type="submit">Give access</button>
-        <button class="btn ghost" id="remove-access" type="button">Remove access</button>
-      </div>
-      <p class="status" id="access-status" role="status"></p>
-    </form>
-    <h3 class="access-head">Emails with access</h3>
-    <p class="status" id="access-empty">None yet.</p>
-    <ul class="access-list" id="access-list"></ul>
+    <p class="lead">Song requests and visits.</p>
+    <h2>Submissions</h2>
+    <p class="lead">Each song request sent from the site.</p>
+    <p class="status" id="submissions-empty">None yet.</p>
+    <ul class="submissions" id="submissions"></ul>
+    <h2>Visits</h2>
+    <iframe plausible-embed src="https://plausible.io/share/ramiacoleman.com?auth=BP07Y0t6Sp2Ejl3L7w1yX&embed=true&theme=light" scrolling="no" frameborder="0" loading="lazy" style="width: 1px; min-width: 100%; height: 1600px; color-scheme: auto;"></iframe>
+    <div style="font-size: 14px; padding-bottom: 14px;">Stats powered by <a target="_blank" rel="noopener" style="color: #4F46E5; text-decoration: underline;" href="https://plausible.io">Plausible Analytics</a></div>
+    <script async src="https://plausible.io/js/embed.host.js"></script>
     <h2>Site changes</h2>
     <p class="lead">Describe what should change. Sending opens an email with the request. Nothing here is published on its own.</p>
     <form class="sheet" id="change-form" novalidate>
@@ -146,19 +138,16 @@
       </div>
       <p class="status" id="status" role="status"></p>
     </form>
-    <h2>Visits</h2>
-    <iframe plausible-embed src="https://plausible.io/share/ramiacoleman.com?auth=BP07Y0t6Sp2Ejl3L7w1yX&embed=true&theme=light" scrolling="no" frameborder="0" loading="lazy" style="width: 1px; min-width: 100%; height: 1600px; color-scheme: auto;"></iframe>
-    <div style="font-size: 14px; padding-bottom: 14px;">Stats powered by <a target="_blank" rel="noopener" style="color: #4F46E5; text-decoration: underline;" href="https://plausible.io">Plausible Analytics</a></div>
-    <script async src="https://plausible.io/js/embed.host.js"></script>
   </section>
 </main>
-<script src="/access.js"></script>
 <script>
 (function () {
   var MAIL = "colemanramia@gmail.com";
   var GATE = "cc437fbc854e76247ad58a80a377907dcede4a3a00c5a35429f787fc5a0a928b";
   var SESSION = "ramiaClientOk";
   var FAILS = "ramiaClientFails";
+  var SHEET = "1MxqRS_awqHoRycpFkwjD24KFVQ-8RLe5Qnn1_xBD_l0";
+  var SHEET_GID = "1332627815";
   var lock = document.getElementById("lock");
   var request = document.getElementById("request");
   var lockForm = document.getElementById("lock-form");
@@ -167,96 +156,118 @@
   var lockBtn = document.getElementById("lock-btn");
   var changeBox = document.getElementById("change");
   var count = document.getElementById("count");
-  var phrase = sessionStorage.getItem("ramiaClientPhrase") || "";
-  var STORED = "ramiaAccessEmails";
 
   function openMail(subject, body) {
     window.location.href = "mailto:" + MAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
   }
-  function readStored() {
-    try {
-      var rows = JSON.parse(localStorage.getItem(STORED) || "[]");
-      return Array.isArray(rows) ? rows : [];
-    } catch (err) {
-      return [];
-    }
+  function cellText(cell) {
+    if (!cell) return "";
+    if (cell.f != null && String(cell.f).trim()) return String(cell.f).trim();
+    if (cell.v == null) return "";
+    return String(cell.v).trim();
   }
-  function writeStored(rows) {
-    localStorage.setItem(STORED, JSON.stringify(rows));
+  function addLine(parent, className, value) {
+    if (!value) return;
+    var line = document.createElement("p");
+    line.className = className;
+    line.textContent = value;
+    parent.appendChild(line);
   }
-  function fileRows() {
-    return (RAMIA_ACCESS.emails || []).map(function (email) {
-      return { email: ramiaEmail(email), name: "" };
-    }).filter(function (row) { return row.email; });
-  }
-  function renderAccess(rows) {
-    var list = document.getElementById("access-list");
-    var empty = document.getElementById("access-empty");
-    var seen = {};
-    var emails = [];
-    (rows || []).forEach(function (row) {
-      var email = ramiaEmail(row && row.email != null ? row.email : row);
-      if (!email || seen[email]) return;
-      seen[email] = true;
-      emails.push({ email: email, name: row && row.name ? String(row.name).trim() : "" });
-    });
+  function renderSubmissions(cols, rows) {
+    var list = document.getElementById("submissions");
+    var empty = document.getElementById("submissions-empty");
+    var items = [];
     list.innerHTML = "";
-    empty.hidden = emails.length > 0;
-    emails.forEach(function (row) {
+    (rows || []).forEach(function (row) {
+      var obj = {};
+      cols.forEach(function (label, i) {
+        obj[label.toLowerCase()] = cellText(row.c && row.c[i]);
+      });
+      if (Object.keys(obj).some(function (key) { return obj[key]; })) items.push(obj);
+    });
+    items.reverse();
+    empty.hidden = items.length > 0;
+    empty.textContent = "None yet.";
+    empty.className = "status";
+    items.forEach(function (row) {
       var item = document.createElement("li");
-      item.textContent = row.email;
-      if (row.name) {
-        var who = document.createElement("span");
-        who.className = "who";
-        who.textContent = row.name;
-        item.appendChild(who);
+      var top = document.createElement("div");
+      var who = document.createElement("p");
+      item.className = "sub";
+      top.className = "top";
+      who.className = "who";
+      who.textContent = row["dj/show name"] || row.email || "Request";
+      top.appendChild(who);
+      if (row.timestamp) {
+        var when = document.createElement("p");
+        when.className = "when";
+        when.textContent = row.timestamp;
+        top.appendChild(when);
       }
+      item.appendChild(top);
+      if (row["dj/show name"] && row.email) addLine(item, "meta", row.email);
+      addLine(item, "song", [row.song, row.request].filter(Boolean).join(" · "));
+      addLine(item, "meta", [row["you are a"], row.city].filter(Boolean).join(" · "));
+      if (row["dub details"]) addLine(item, "detail", "Dub: " + row["dub details"]);
+      if (row["jingle details"]) addLine(item, "detail", "Jingle: " + row["jingle details"]);
+      if (row.mixes) addLine(item, "detail", "Mixes: " + row.mixes);
+      if (row.message) addLine(item, "detail", row.message);
       list.appendChild(item);
     });
   }
-  function showLocal() {
-    renderAccess(fileRows().concat(readStored()));
-  }
-  function loadAccess() {
-    if (!RAMIA_ACCESS.checkUrl) {
-      showLocal();
-      return Promise.resolve();
+  function loadSubmissions() {
+    var empty = document.getElementById("submissions-empty");
+    var list = document.getElementById("submissions");
+    list.innerHTML = "";
+    if (!SHEET) {
+      empty.hidden = false;
+      empty.className = "status";
+      empty.textContent = "The request sheet isn't shared yet, so this list can't load.";
+      return;
     }
-    if (!phrase) {
-      renderAccess(fileRows());
-      return Promise.resolve();
-    }
-    return ramiaJsonp({ list: "1", pass: phrase }).then(function (data) {
-      if (!data || data.ok === false) {
-        document.getElementById("access-status").textContent = data && data.error === "pass"
-          ? "Lock this page and enter the passphrase again."
-          : "Couldn't load the access list.";
-        document.getElementById("access-status").className = "status err";
-        renderAccess(fileRows());
+    empty.hidden = false;
+    empty.className = "status";
+    empty.textContent = "Loading…";
+    var done = false;
+    window.google = window.google || {};
+    google.visualization = google.visualization || {};
+    google.visualization.Query = google.visualization.Query || {};
+    google.visualization.Query.setResponse = function (data) {
+      done = true;
+      if (!data || data.status !== "ok" || !data.table) {
+        empty.hidden = false;
+        empty.className = "status err";
+        empty.textContent = "Couldn't load submissions.";
         return;
       }
-      renderAccess(fileRows().concat(data.emails || []));
-    }).catch(function () {
-      document.getElementById("access-status").textContent = "Couldn't load the access list.";
-      document.getElementById("access-status").className = "status err";
-      renderAccess(fileRows());
-    });
+      var cols = (data.table.cols || []).map(function (col) {
+        return (col.label || "").trim();
+      });
+      renderSubmissions(cols, data.table.rows || []);
+    };
+    var script = document.createElement("script");
+    script.src = "https://docs.google.com/spreadsheets/d/" + encodeURIComponent(SHEET) + "/gviz/tq?tqx=out:json&gid=" + encodeURIComponent(SHEET_GID);
+    script.onload = function () {
+      if (done) return;
+      empty.hidden = false;
+      empty.className = "status err";
+      empty.textContent = "Couldn't load submissions.";
+    };
+    script.onerror = script.onload;
+    document.head.appendChild(script);
   }
   function openRequest() {
     lock.hidden = true;
     request.hidden = false;
     pass.value = "";
-    loadAccess();
-    document.getElementById("dj-email").focus();
+    loadSubmissions();
   }
   function closeRequest() {
-    phrase = "";
     sessionStorage.removeItem("ramiaClientPhrase");
     sessionStorage.removeItem(SESSION);
     request.hidden = true;
     lock.hidden = false;
     document.getElementById("status").textContent = "";
-    document.getElementById("access-status").textContent = "";
     pass.focus();
   }
   function waitLeft() {
@@ -309,8 +320,7 @@
         pass.select();
         return;
       }
-      phrase = pass.value;
-      if (RAMIA_ACCESS.checkUrl) sessionStorage.setItem("ramiaClientPhrase", phrase);
+      sessionStorage.removeItem("ramiaClientPhrase");
       sessionStorage.removeItem("ramiaClientCount");
       sessionStorage.removeItem(FAILS);
       sessionStorage.setItem(SESSION, "1");
@@ -324,69 +334,6 @@
   });
 
   document.getElementById("lock-again").addEventListener("click", closeRequest);
-
-  function saveDj(email, name, remove) {
-    if (!RAMIA_ACCESS.checkUrl) return Promise.resolve({ ok: true });
-    if (!phrase) return Promise.reject(new Error("pass"));
-    return ramiaJsonp({ email: email, name: name || "", pass: phrase, grant: remove ? "0" : "1" });
-  }
-  function accessMessage(remove, result) {
-    if (result && result.error === "pass") return "Lock this page and enter the passphrase again.";
-    if (result && result.already && !remove) return "That email already has access.";
-    if (remove) return ramiaAccessLocked() ? "That email no longer has access." : "Saved.";
-    return "Saved. They can open the music with this email.";
-  }
-  function runAccess(remove) {
-    var status = document.getElementById("access-status");
-    var emailInput = document.getElementById("dj-email");
-    var email = ramiaEmail(emailInput.value);
-    var name = document.getElementById("dj-name").value.trim();
-    if (sessionStorage.getItem(SESSION) !== "1") { closeRequest(); return; }
-    if (!email || !emailInput.checkValidity()) {
-      status.textContent = "Add a valid DJ email.";
-      status.className = "status err";
-      emailInput.focus();
-      return;
-    }
-    var give = document.getElementById("give-access");
-    var removeBtn = document.getElementById("remove-access");
-    give.disabled = true;
-    removeBtn.disabled = true;
-    status.textContent = "Saving…";
-    status.className = "status";
-    saveDj(email, name, remove).then(function (result) {
-      give.disabled = false;
-      removeBtn.disabled = false;
-      if (result && result.ok === false) {
-        status.textContent = accessMessage(remove, result);
-        status.className = "status err";
-        return;
-      }
-      if (!RAMIA_ACCESS.checkUrl) {
-        var rows = readStored().filter(function (row) { return ramiaEmail(row.email) !== email; });
-        if (!remove) rows.push({ email: email, name: name });
-        writeStored(rows);
-        showLocal();
-      } else {
-        loadAccess();
-      }
-      if (!remove) document.getElementById("access-form").reset();
-      status.textContent = accessMessage(remove, result);
-      status.className = "status ok";
-    }).catch(function () {
-      give.disabled = false;
-      removeBtn.disabled = false;
-      status.textContent = "Didn't save. Try again.";
-      status.className = "status err";
-    });
-  }
-  document.getElementById("access-form").addEventListener("submit", function (e) {
-    e.preventDefault();
-    runAccess(false);
-  });
-  document.getElementById("remove-access").addEventListener("click", function () {
-    runAccess(true);
-  });
 
   changeBox.addEventListener("input", function () {
     count.textContent = changeBox.value.length + " / 2000";
